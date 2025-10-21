@@ -1,0 +1,83 @@
+micronaut:
+  security:
+    enabled: true
+    token:
+      jwt:
+        signatures:
+          secret:
+            generator:
+              secret: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
+
+akhq:
+  server:
+    access-log:
+      enabled: true
+
+  connections:
+    local:
+      properties:
+        bootstrap.servers: "kafka:9092"
+      schema-registry:
+        url: "http://schema-registry:8085"
+      connect:
+        - name: "connect"
+          url: "http://connect:8083"
+      ksqldb:
+        - name: "ksqldb"
+          url: "http://ksqldb:8088"
+
+  security:
+    roles:
+      node-admin:
+        - resources: [ "NODE" ]
+          actions: [ "READ", "READ_CONFIG", "ALTER_CONFIG" ]
+      topic-admin:
+        - resources: [ "TOPIC", "TOPIC_DATA" ]
+          actions: [ "READ", "CREATE", "DELETE" ]
+        - resources: [ "TOPIC" ]
+          actions: [ "UPDATE", "READ_CONFIG", "ALTER_CONFIG" ]
+      topic-reader:
+        - resources: [ "TOPIC", "TOPIC_DATA" ]
+          actions: [ "READ" ]
+        - resources: [ "TOPIC" ]
+          actions: [ "READ_CONFIG" ]
+      registry-admin:
+        - resources: [ "SCHEMA" ]
+          actions: [ "READ", "CREATE", "UPDATE", "DELETE", "DELETE_VERSION" ]
+      connect-admin:
+        - resources: [ "CONNECTOR" ]
+          actions: [ "READ", "CREATE", "UPDATE_STATE", "DELETE" ]
+      group-read:
+        - resources: [ "CONSUMER_GROUP" ]
+          actions: [ "READ" ]
+      connect-cluster-read:
+        - resources: [ "CONNECT_CLUSTER" ]
+          actions: [ "READ" ]
+      ksqldb-admin:
+        - resources: [ "KSQLDB" ]
+          actions: [ "READ", "EXECUTE" ]
+
+    default-group: ""
+    groups:
+      admin:
+        - role: node-admin
+        - role: topic-admin
+        - role: registry-admin
+        - role: connect-admin
+        - role: group-read
+        - role: connect-cluster-read
+        - role: ksqldb-admin
+      reader:
+        - role: topic-reader
+        - role: group-read
+
+    basic-auth:
+      - username: admin
+        password: 8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918  # SHA-256 hash of 'admin'
+        groups:
+          - admin
+      - username: reader
+        password: 3d0941964aa3ebdcb00ccef58b1bb399f9f898465e9886d5aec7f31090a0fb30  # SHA-256 hash of 'reader'
+        groups:
+          - reader
+
